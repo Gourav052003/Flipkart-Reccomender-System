@@ -17,3 +17,4 @@ data:
         metrics_path: /metrics
         static_configs:
           - targets: ['35.226.128.123:5000']
+          
