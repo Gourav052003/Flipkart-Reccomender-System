@@ -33,17 +33,17 @@ def create_app():
                     "session_id": "user-session"
                 }
             }
-        )["answer"]
+        )
 
-        return response
+        return response.content
     
     @app.route("/metrics")
     def metrics():
-        return Response(generate_latest, mimetype="text/plane")
+        return Response(generate_latest(), mimetype="text/plain")
     
     return app
 
-if __name__ == "_main__":
+if __name__ == "__main__":
     app = create_app()
     app.run(host="0.0.0.0",port=5000,debug=True)
 

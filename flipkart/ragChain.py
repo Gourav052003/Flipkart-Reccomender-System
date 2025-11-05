@@ -1,10 +1,9 @@
 from langchain_groq import ChatGroq
-# from langchain.chains import create_history_aware_retriever, create_retrieval_chain
-# from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate,MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from flipkart.config import Config
 
 class RAGChainBuilder:
@@ -38,25 +37,19 @@ class RAGChainBuilder:
             ("human", "{input}")  
         ])
 
-        # history_aware_retriever = create_history_aware_retriever(
-        #     self.model, retriever, context_prompt   
-        # )
+       
+        
+        history_aware_retriever_context = context_prompt | self.model | RunnableLambda(lambda msg: msg.content)
 
-        # qa_chain = create_stuff_documents_chain(
-        #     self.model, qa_prompt
-        # )
+        retrieve_docs = RunnablePassthrough.assign(
+            context = history_aware_retriever_context | retriever
+        )
+        rag_chain = retrieve_docs | qa_prompt | self.model
 
-        # rag_chain = create_retrieval_chain(
-        #     history_aware_retriever, qa_chain
-        # )
-
-        history_aware_retriever_context = context_prompt | self.model | retriever
-        rag_chain = history_aware_retriever_context | qa_prompt | self.model
-
+        # return rag_chain
         return RunnableWithMessageHistory(
             rag_chain, 
             self._get_history,
             input_messages_key = "input",
             history_messages_key = "chat_history",
-            output_messages_key = "answer"
         )
